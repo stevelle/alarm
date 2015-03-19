@@ -8,7 +8,7 @@ apt-get -y install build-essential python python-dev python-virtualenv superviso
 adduser --disabled-password --gecos "" loadmonitor
 cd /home/loadmonitor
 
-gent source
+# fetch monitor source
 git clone https://github.com/stevelle/loadmonitor.git 
 cp loadmonitor/monitor.py .
 

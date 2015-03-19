@@ -7,7 +7,7 @@ import requests
 import urlparse
 import yaml
 
-DEFAULT_CONF_FILE = '/etc/alarm/checks.yml'
+DEFAULT_CONF_FILE = '/etc/loadmonitor/config.yml'
 
 
 class Config():

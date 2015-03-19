@@ -2,8 +2,7 @@
 
 # install dependencies
 apt-get update
-apt-get -y install build-essential python python-dev python-virtualenv 
-supervisor git
+apt-get -y install build-essential python python-dev python-virtualenv supervisor git
 
 # create a user to run the agent 
 adduser --disabled-password --gecos "" loadmonitor

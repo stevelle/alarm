@@ -1,7 +1,10 @@
 from datetime import datetime
 from datetime import timedelta
+from time import sleep
 
+import argparse
 import requests
+import urlparse
 import yaml
 
 DEFAULT_CONF_FILE = '/etc/alarm/checks.yml'
@@ -26,34 +29,35 @@ class Monitor():
 
     def start(self):
         self.run_checks()
-        while continue_checks:
-            self.wait_cycle(lambda: self.run_checks())
+        while self.continue_checks:
+            self.wait_cycle()
+            self.run_checks()
 
     def run_checks(self):
         rules = self.config.rules
         cache = {}
+        self.last_checked = datetime.now()
         for target in rules['targets']:
             for host in target['target_urls']:
                 for check in target['checks']:
                     data = self.resolve(host, check, cache)
-                    failures = evaluate(host, check, data)
-                    if failures >= check['trigger_on_failures']:
-                        alarm_to(check.trigger_url)
+                    alarms = self.evaluate(host, check, data)
+                    if alarms >= check['alarm_states']:
+                        requests.post(check['trigger_url'])
 
     def resolve(self, host, check, cache):
+        endpoint = urlparse.urljoin(host, check['metric'])
         check_name = check['name']
-        if host in cache and check_name in cache[host]:
-            return cache[host][check_name]
+        if endpoint in cache:
+            return cache[endpoint]
 
-        if host not in cache:
-            cache[host] = {}
-
-        r = requests.get(host + check['metric'])
-        cache[host][check_name] = r
-        return float(r) 
+        reply = requests.get(endpoint)
+        metric = float(reply.text)
+        cache[endpoint] = metric
+        return metric 
 
     @staticmethod
-    def alarm_state(check, data):
+    def check_alarm_state(check, data):
         operator = check['operator']
         threshold = check['threshold']
         if operator == 'gte':
@@ -70,7 +74,7 @@ class Monitor():
             return False # WAT DO? validation should cover this
 
     def evaluate(self, host, check, data):
-        alarm = self.alarm_state(check, data)
+        alarm = self.check_alarm_state(check, data)
 
         # ensure a alarm counter exists
         check_name = check['name']
@@ -86,19 +90,20 @@ class Monitor():
             self.alarms[host][check_name] = 0
         return self.alarms[host][check_name]
 
-    def wait_cycle(self, action):
-        sleep(next_time() - datetime.now())
-        return action
+    def wait_cycle(self):
+        stall_time = (self.next_time() - self.last_checked).total_seconds()
+        sleep(stall_time)
 
     def next_time(self):
-        return (datetime.now() +
-        timedelta(seconds=self.config.rules['check_period_seconds']))
-
-    def alarm_to(self,trigger_url):
-        requests.post(trigger_url, body={})
+        period = self.config.rules['check_period_seconds']
+        return (datetime.now() + timedelta(seconds=period))
 
 if __name__ == '__main__':
-    config = Config()
+    parser = argparse.ArgumentParser(description='Load Monitor service')
+    parser.add_argument('-c', '--config', type=str, default=DEFAULT_CONF_FILE, 
+                        help='path to configuration file') 
+    args = parser.parse_args()
+
+    config = Config(args.config)
     monitor = Monitor(config)
     monitor.start()
-

@@ -1,4 +1,4 @@
-check_period_seconds: 30
+check_period_seconds: 3 
 targets:
   - target_urls: 
     - http://localhost:5000/
@@ -13,7 +13,7 @@ targets:
       - name: Low CPU
         metric: cpu
         operator: lte
-        threshold: 25
+        threshold: 50
         alarm_states: 3
         trigger_url: http://localhost:5001/scale_down/1
 

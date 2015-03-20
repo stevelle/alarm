@@ -38,7 +38,6 @@ class Monitor():
     def run_checks(self):
         rules = self.config.rules
         cache = {}
-        self.last_checked = datetime.now()
         for host in scaling_group_urls():
             for check in rules['checks']:
                 data = self.resolve(host, check, cache)
@@ -97,12 +96,7 @@ class Monitor():
         return self.alarms[host][check_name]
 
     def wait_cycle(self):
-        stall_time = (self.next_time() - self.last_checked).total_seconds()
-        sleep(stall_time)
-
-    def next_time(self):
-        period = self.config.rules['check_period_seconds']
-        return (datetime.now() + timedelta(seconds=period))
+        sleep(self.config.rules['check_period_seconds'])
 
 def scaling_group_urls():
     meta_reply = requests.get(META_DATA_URL)

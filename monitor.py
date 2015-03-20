@@ -46,7 +46,10 @@ class Monitor():
                 print ('%s triggered on %s for %s cycles' %
                        (host, check['name'], alarms))
                 if alarms >= check['alarm_states']:
-                    requests.post(check['trigger_url'])
+                    try:
+                        requests.post(check['trigger_url'])
+                    except Error, e:
+                        print e.message
 
     def resolve(self, host, check, cache):
         endpoint = urlparse.urljoin("http://%s:8801" % host, check['metric'])

@@ -42,8 +42,8 @@ class Monitor():
             for check in rules['checks']:
                 data = self.resolve(host, check, cache)
                 alarms = self.evaluate(host, check, data)
-                print ('%s triggered on %s for %s cycles' %
-                       (host, check['name'], alarms))
+                print ('%s has had %s consecutive alarm states for %s' %
+                       (host, alarms, check['name']))
                 if alarms >= check['alarm_states']:
                     try:
                         requests.post(check['trigger_url'])

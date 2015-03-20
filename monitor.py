@@ -5,6 +5,7 @@ from time import sleep
 import argparse
 import json
 import requests
+import socket
 import sys
 import urlparse
 import yaml
@@ -111,6 +112,9 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--config', type=str, default=DEFAULT_CONF_FILE, 
                         help='path to configuration file') 
     args = parser.parse_args()
+
+    # set standard socket timeout
+    socket.setdefaulttimeout(5)    
 
     config = Config(args.config)
     monitor = Monitor(config)

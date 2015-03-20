@@ -5,6 +5,7 @@ from time import sleep
 import argparse
 import json
 import requests
+import sys
 import urlparse
 import yaml
 
@@ -48,6 +49,8 @@ class Monitor():
                         requests.post(check['trigger_url'])
                 except Error, e:
                     print e.message
+        sys.stdout.flush()
+
 
     def resolve(self, host, check, cache):
         endpoint = urlparse.urljoin("http://%s:8801" % host, check['metric'])

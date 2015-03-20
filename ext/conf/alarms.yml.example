@@ -1,16 +1,13 @@
-check_period_seconds: 3 
-targets:
-  - target_urls: 
-    - http://localhost:5000/
-    checks:
-      - name: High CPU
+check_period_seconds: 30 
+checks:
+    - name: High CPU
         metric: cpu
         operator: gte
         threshold: 60
         alarm_states: 2 
         trigger_url: http://localhost:5001/scale_up/1 
 
-      - name: Low CPU
+    - name: Low CPU
         metric: cpu
         operator: lte
         threshold: 50

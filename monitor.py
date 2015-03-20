@@ -3,11 +3,13 @@ from datetime import timedelta
 from time import sleep
 
 import argparse
+import json
 import requests
 import urlparse
 import yaml
 
 DEFAULT_CONF_FILE = '/etc/loadmonitor/config.yml'
+META_DATA_URL = 'http://169.254.169.254/openstack/latest/meta_data/json'
 
 
 class Config():
@@ -37,13 +39,12 @@ class Monitor():
         rules = self.config.rules
         cache = {}
         self.last_checked = datetime.now()
-        for target in rules['targets']:
-            for host in target['target_urls']:
-                for check in target['checks']:
-                    data = self.resolve(host, check, cache)
-                    alarms = self.evaluate(host, check, data)
-                    if alarms >= check['alarm_states']:
-                        requests.post(check['trigger_url'])
+        for host in scaling_group_urls():
+            for check in target['checks']:
+                data = self.resolve(host, check, cache)
+                alarms = self.evaluate(host, check, data)
+                if alarms >= check['alarm_states']:
+                    requests.post(check['trigger_url'])
 
     def resolve(self, host, check, cache):
         endpoint = urlparse.urljoin(host, check['metric'])
@@ -97,6 +98,12 @@ class Monitor():
     def next_time(self):
         period = self.config.rules['check_period_seconds']
         return (datetime.now() + timedelta(seconds=period))
+
+def scaling_group_urls():
+    meta_reply = requests.get(META_DATA_URL)
+    json_meta = meta_reply.json()
+    return json.loads(json_meta.get('meta',{}).get('servers', '[]'))
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Load Monitor service')

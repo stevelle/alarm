@@ -40,15 +40,15 @@ class Monitor():
         cache = {}
         for host in scaling_group_urls():
             for check in rules['checks']:
-                data = self.resolve(host, check, cache)
-                alarms = self.evaluate(host, check, data)
-                print ('%s has had %s consecutive alarm states for %s' %
-                       (host, alarms, check['name']))
-                if alarms >= check['alarm_states']:
-                    try:
+                try:
+                    data = self.resolve(host, check, cache)
+                    alarms = self.evaluate(host, check, data)
+                    print ('%s has had %s consecutive alarm states for %s' %
+                           (host, alarms, check['name']))
+                    if alarms >= check['alarm_states']:
                         requests.post(check['trigger_url'])
-                    except Error, e:
-                        print e.message
+                except Error, e:
+                    print e.message
 
     def resolve(self, host, check, cache):
         endpoint = urlparse.urljoin("http://%s:8801" % host, check['metric'])

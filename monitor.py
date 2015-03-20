@@ -5,7 +5,6 @@ from time import sleep
 import argparse
 import json
 import requests
-import socket
 import sys
 import urlparse
 import yaml
@@ -47,7 +46,7 @@ class Monitor():
                     print ('%s has had %s consecutive alarm states for %s' %
                            (host, alarms, check['name']))
                     if alarms >= check['alarm_states']:
-                        requests.post(check['trigger_url'])
+                        requests.post(check['trigger_url'], timeout=5)
                 except Error, e:
                     print e.message
         sys.stdout.flush()
@@ -59,7 +58,7 @@ class Monitor():
         if endpoint in cache:
             return cache[endpoint]
 
-        reply = requests.get(endpoint)
+        reply = requests.get(endpoint, timeout=5)
         metric = float(reply.text)
         cache[endpoint] = metric
         return metric 
@@ -112,9 +111,6 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--config', type=str, default=DEFAULT_CONF_FILE, 
                         help='path to configuration file') 
     args = parser.parse_args()
-
-    # set standard socket timeout
-    socket.setdefaulttimeout(5)    
 
     config = Config(args.config)
     monitor = Monitor(config)

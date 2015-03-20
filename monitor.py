@@ -9,7 +9,7 @@ import urlparse
 import yaml
 
 DEFAULT_CONF_FILE = '/etc/loadmonitor/config.yml'
-META_DATA_URL = 'http://169.254.169.254/openstack/latest/meta_data/json'
+META_DATA_URL = 'http://169.254.169.254/openstack/latest/meta_data.json'
 
 
 class Config():
@@ -40,14 +40,16 @@ class Monitor():
         cache = {}
         self.last_checked = datetime.now()
         for host in scaling_group_urls():
-            for check in target['checks']:
+            for check in rules['checks']:
                 data = self.resolve(host, check, cache)
                 alarms = self.evaluate(host, check, data)
+                print ('%s triggered on %s for %s cycles' %
+                       (host, check['name'], alarms))
                 if alarms >= check['alarm_states']:
                     requests.post(check['trigger_url'])
 
     def resolve(self, host, check, cache):
-        endpoint = urlparse.urljoin(host, check['metric'])
+        endpoint = urlparse.urljoin("http://%s:8801" % host, check['metric')
         check_name = check['name']
         if endpoint in cache:
             return cache[endpoint]

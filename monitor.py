@@ -30,10 +30,9 @@ class Monitor():
         self.alarms = {}
 
     def start(self):
-        self.run_checks()
         while self.continue_checks:
-            self.wait_cycle()
             self.run_checks()
+            self.wait_cycle()
 
     def run_checks(self):
         rules = self.config.rules

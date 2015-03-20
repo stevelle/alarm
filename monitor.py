@@ -49,7 +49,7 @@ class Monitor():
                     requests.post(check['trigger_url'])
 
     def resolve(self, host, check, cache):
-        endpoint = urlparse.urljoin("http://%s:8801" % host, check['metric')
+        endpoint = urlparse.urljoin("http://%s:8801" % host, check['metric'])
         check_name = check['name']
         if endpoint in cache:
             return cache[endpoint]
